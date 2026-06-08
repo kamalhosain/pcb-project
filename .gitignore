@@ -1,0 +1,10 @@
+# Backend
+pcb-backend/node_modules/
+pcb-backend/.env
+
+# Frontend
+pcb-frontend/node_modules/
+pcb-frontend/build/
+
+#PlatformIO
+pcb-firmware/.pio/
