@@ -12,7 +12,6 @@ const MQTT_USER = process.env.MQTT_USER;
 const MQTT_PASS = process.env.MQTT_PASS;
 
 const HTTP_PORT = process.env.HTTP_PORT || 3001;
-const WS_PORT   = process.env.WS_PORT   || 3002;
 
 // --- Topics ---
 const TOPIC_PULSADOR1 = "pcb/pulsadores/pulsador1";
@@ -27,12 +26,12 @@ app.get("/health", (req, res) => {
     res.json({ status: "ok" });
 });
 
-app.listen(HTTP_PORT, () => {
+const server = app.listen(HTTP_PORT, () => {
     console.log(`Servidor HTTP corriendo en puerto ${HTTP_PORT}`);
 });
 
 // --- Servidor WebSocket ---
-const wss = new WebSocketServer({ port: WS_PORT });
+const wss = new WebSocketServer({ server });
 const clientes = new Set();
 
 wss.on("connection", (ws) => {
