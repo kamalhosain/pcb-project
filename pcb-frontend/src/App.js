@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
-const WS_URL = "ws://localhost:3002";
+const WS_URL = "wss://melodious-nourishment-production-1a05.up.railway.app";
 
 function App() {
   const [wsConectado, setWsConectado] = useState(false);
