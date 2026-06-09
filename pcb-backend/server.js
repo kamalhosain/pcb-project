@@ -60,7 +60,7 @@ wss.on("connection", (ws) => {
     });
 });
 
-console.log(`Servidor WebSocket corriendo en puerto ${WS_PORT}`);
+console.log(`Servidor WebSocket corriendo en el mismo puerto que HTTP`);
 
 // --- Función para enviar a todos los clientes React conectados ---
 function broadcast(data) {
