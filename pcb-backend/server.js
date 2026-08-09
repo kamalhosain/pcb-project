@@ -16,6 +16,7 @@ const HTTP_PORT = process.env.HTTP_PORT || 3001;
 // --- Topics ---
 const TOPIC_PULSADOR1 = "pcb/pulsadores/pulsador1";
 const TOPIC_RELAY1_CMD = "pcb/relays/relay1/cmd";
+const TOPIC_RELAY1_STATE = "pcb/relays/relay1/estado";
 
 // --- Servidor HTTP (Express) ---
 const app = express();
@@ -83,6 +84,9 @@ mqttClient.on("connect", () => {
     console.log("Conectado a HiveMQ MQTT");
     mqttClient.subscribe(TOPIC_PULSADOR1, (err) => {
         if (!err) console.log(`Suscripto a: ${TOPIC_PULSADOR1}`);
+    });
+    mqttClient.subscribe(TOPIC_RELAY1_STATE, (err) => {
+        if (!err) console.log(`Suscripto a: ${TOPIC_RELAY1_STATE}`);
     });
 });
 

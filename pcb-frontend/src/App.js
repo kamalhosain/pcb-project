@@ -27,6 +27,10 @@ function App() {
         if (mensaje.topic === "pcb/pulsadores/pulsador1") {
           setPulsador1(mensaje.payload);
         }
+
+        if (mensaje.topic === "pcb/relays/relay1/estado") {
+          setRelay1(mensaje.payload === "ON");
+        }
       } catch (err) {
         console.error("Error procesando mensaje:", err);
       }
