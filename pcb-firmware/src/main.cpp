@@ -1,11 +1,9 @@
 #include <Arduino.h>
-#include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
+#include <WiFiManager.h>
 
-// --- Configuración Wifi ---
-const char* WIFI_SSID = "Personal-DBA-2.4";
-const char* WIFI_PASSWORD = "0142009979";
+WiFiManager wm;
 
 // --- Configuración MQTT ---
 const char* MQTT_HOST = "920ace17743940d19bee775522140b94.s1.eu.hivemq.cloud";
@@ -17,6 +15,14 @@ const char* MQTT_CLIENT_ID = "esp32-pcb-test";
 // --- Pines ---
 const int PIN_PULSADOR1 = 15;
 const int PIN_RELAY1 = 13;
+const int PIN_RESET = 4;
+const int PIN_LED_CONFIG = 32;
+
+// --- Variables para detección de RESET long-press ---
+bool botonPresionado = false;
+unsigned long tiempoInicioPresion = 0;
+const unsigned long DURACION_LONG_PRESS = 5000; // 5 segundos
+bool resetDisparado = false;
 
 // --- Topics ---
 const char* TOPIC_PULSADOR1 = "pcb/pulsadores/pulsador1";
@@ -30,17 +36,6 @@ int ultimoPulsador1 = -1;
 // --- Objetos ---
 WiFiClientSecure wifiClient;
 PubSubClient mqttClient(wifiClient);
-
-// --- Conexión WiFi ---
-void conectarWifi() {
-  Serial.print("Conectando a WiFi");
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("\nWiFi conectado. IP: " + WiFi.localIP().toString());
-}
 
 // --- Callback: Mensajes MQTT entrantes ---
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
@@ -85,20 +80,73 @@ void conectarMQTT() {
   }
 }
 
+void chequearLongPress() {
+  bool estadoActual = (digitalRead(PIN_RESET) == LOW); // PRESIONADO
+
+  if (estadoActual && !botonPresionado) {
+    // flanco de bajada: arranca la cuenta
+    botonPresionado = true;
+    tiempoInicioPresion = millis();
+    resetDisparado = false;
+  } else if (estadoActual && botonPresionado && !resetDisparado) {
+    // sigue presionado, chequeo si ya pasaron los 5 segundos
+    if (millis() - tiempoInicioPresion >= DURACION_LONG_PRESS) {
+      resetDisparado = true;
+      dispararResetWiFi();
+    }
+  } else if (!estadoActual && botonPresionado) {
+    // se soltó el botón
+    botonPresionado = false;
+  }
+}
+
+void dispararResetWiFi() {
+  Serial.println("RESET detectado. Borrando credenciales WiFi...");
+
+  // feedback visual: parpadeo rápido de LED antes de reiniciar
+  for (int i = 0; i < 6, i++) {
+    digitalWrite(PIN_LED_CONFIG, !digitalRead(PINT_LED_CONFIG));
+    delay(150); // este delay es aceptable, no bloquea nada
+  }
+
+  wm.resetSettings(); // Borra credenciales guardadas
+  delay(500);
+  ESP.restart(); // Reinicia el ESP32
+}
+
 // --- Setup ---
 void setup() {
   Serial.begin(115200);
 
   pinMode(PIN_PULSADOR1, INPUT);
   pinMode(PIN_RELAY1, OUTPUT);
-  digitalWrite(PIN_RELAY1, LOW);
+  pinMode(PIN_RESET, INPUT);
+  pinMode(PIN_LED_CONFIG, OUTPUT);
 
-  conectarWifi();
+  digitalWrite(PIN_RELAY1, LOW);
+  digitalWrite(PIN_LED_CONFIG, LOW);
+
+
+  // --- Conexión WiFi ---
+
+  // WiFi Manager intenta conectar con credenciales guardadas.
+  // Si no hay o falla, levanta el AP automáticamente
+  bool conectado = wm.autoConnect("EJDevices-Setup");
+
+  if (!conectado) {
+    Serial.println("Fallo al conectar y configurar WiFi. Reiniciando...");
+    delay(3000);
+    ESP.restart();
+  }
+
   conectarMQTT();
 }
 
 // --- Loop ---
 void loop() {
+
+  chequearLongPress();
+
   // Mantener conexión MQTT activa
   if (!mqttClient.connected()) {
     conectarMQTT();
