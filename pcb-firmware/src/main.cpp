@@ -80,6 +80,20 @@ void conectarMQTT() {
   }
 }
 
+void dispararResetWiFi() {
+  Serial.println("RESET detectado. Borrando credenciales WiFi...");
+
+  // feedback visual: parpadeo rápido de LED antes de reiniciar
+  for (int i = 0; i < 6; i++) {
+    digitalWrite(PIN_LED_CONFIG, !digitalRead(PIN_LED_CONFIG));
+    delay(150); // este delay es aceptable, no bloquea nada
+  }
+
+  wm.resetSettings(); // Borra credenciales guardadas
+  delay(500);
+  ESP.restart(); // Reinicia el ESP32
+}
+
 void chequearLongPress() {
   bool estadoActual = (digitalRead(PIN_RESET) == LOW); // PRESIONADO
 
@@ -100,19 +114,6 @@ void chequearLongPress() {
   }
 }
 
-void dispararResetWiFi() {
-  Serial.println("RESET detectado. Borrando credenciales WiFi...");
-
-  // feedback visual: parpadeo rápido de LED antes de reiniciar
-  for (int i = 0; i < 6, i++) {
-    digitalWrite(PIN_LED_CONFIG, !digitalRead(PINT_LED_CONFIG));
-    delay(150); // este delay es aceptable, no bloquea nada
-  }
-
-  wm.resetSettings(); // Borra credenciales guardadas
-  delay(500);
-  ESP.restart(); // Reinicia el ESP32
-}
 
 // --- Setup ---
 void setup() {
