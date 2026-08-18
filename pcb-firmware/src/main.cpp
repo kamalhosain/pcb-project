@@ -129,6 +129,8 @@ void setup() {
 
   // --- Conexión WiFi ---
 
+  wm.setConfigPortalTimeout(300); // Tiempo máximo para configurar WiFi (5 minutos)
+
   // WiFi Manager intenta conectar con credenciales guardadas.
   // Si no hay o falla, levanta el AP automáticamente
   bool conectado = wm.autoConnect("EJDevices-Setup");
