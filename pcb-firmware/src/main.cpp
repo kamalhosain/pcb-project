@@ -21,6 +21,7 @@ const int PIN_RELAY1 = 13;
 // --- Topics ---
 const char* TOPIC_PULSADOR1 = "pcb/pulsadores/pulsador1";
 const char* TOPIC_RELAY1_CMD = "pcb/relays/relay1/cmd";
+const char* TOPIC_RELAY1_STATE = "pcb/relays/relay1/estado";
 
 // --- Variables de estado ---
 bool estadoRelay1 = false;
@@ -55,10 +56,12 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
       estadoRelay1 = true;
       digitalWrite(PIN_RELAY1, HIGH);
       Serial.println("Relay 1 encendido");
+      mqttClient.publish(TOPIC_RELAY1_STATE, "ON");
     } else if (mensaje == "OFF") {
       estadoRelay1 = false;
       digitalWrite(PIN_RELAY1, LOW);
       Serial.println("Relay 1 apagado");
+      mqttClient.publish(TOPIC_RELAY1_STATE, "OFF");
     }
   }
 }

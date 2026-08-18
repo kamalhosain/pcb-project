@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
-const WS_URL = "wss://melodious-nourishment-production-1a05.up.railway.app";
+const WS_URL = "wss://pcb-project-67pm.onrender.com";
 
 function App() {
   const [wsConectado, setWsConectado] = useState(false);
@@ -26,6 +26,10 @@ function App() {
 
         if (mensaje.topic === "pcb/pulsadores/pulsador1") {
           setPulsador1(mensaje.payload);
+        }
+
+        if (mensaje.topic === "pcb/relays/relay1/estado") {
+          setRelay1(mensaje.payload === "ON");
         }
       } catch (err) {
         console.error("Error procesando mensaje:", err);
